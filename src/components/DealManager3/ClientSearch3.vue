@@ -81,7 +81,7 @@
     </div>
 
     <!-- Блок "Клиент не найден" -->
-    <div v-if="showNotFound" class="client-not-found">
+    <div v-if="showNotFound && !showCreateForm" class="client-not-found">
       <div class="not-found-header">
         <span class="not-found-icon">❌</span>
         <span class="not-found-text">Клиент не найден</span>
@@ -93,12 +93,240 @@
         </button>
       </div>
     </div>
+
+    <!-- Форма создания нового клиента -->
+    <div v-if="showCreateForm" class="create-client-form">
+      <div class="create-form-header">
+        <h3>Создание нового клиента</h3>
+        <button type="button" class="btn-cancel-create" @click="cancelCreateClient">
+          ✕ Отмена
+        </button>
+      </div>
+      
+      <div class="form-fields">
+        <!-- Основная информация -->
+        <div class="form-section">
+          <h4>Основная информация</h4>
+          
+          <div class="form-group">
+            <label for="fullName">Полное наименование:</label>
+            <input 
+              type="text" 
+              id="fullName" 
+              v-model="newClientForm.fullName"
+              :class="{ 'error': formErrors.fullName }"
+              placeholder="Общество с ограниченной ответственностью «Рога и копыта»"
+            />
+            <span v-if="formErrors.fullName" class="error-text">{{ formErrors.fullName }}</span>
+          </div>
+          
+          <div class="form-group">
+            <label for="shortName">Краткое наименование:</label>
+            <input 
+              type="text" 
+              id="shortName" 
+              v-model="newClientForm.shortName"
+              :class="{ 'error': formErrors.shortName }"
+              placeholder="Рога и копыта"
+            />
+            <span v-if="formErrors.shortName" class="error-text">{{ formErrors.shortName }}</span>
+          </div>
+          
+          <div class="form-group">
+            <label for="fullWithOpf">Полное наименование с ОПФ:</label>
+            <input 
+              type="text" 
+              id="fullWithOpf" 
+              v-model="newClientForm.fullWithOpf"
+              :class="{ 'error': formErrors.fullWithOpf }"
+              placeholder="ООО «Рога и копыта»"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label for="shortWithOpf">Краткое наименование с ОПФ:</label>
+            <input 
+              type="text" 
+              id="shortWithOpf" 
+              v-model="newClientForm.shortWithOpf"
+              :class="{ 'error': formErrors.shortWithOpf }"
+              placeholder="ООО «Рога и копыта»"
+            />
+          </div>
+        </div>
+
+        <!-- Реквизиты -->
+        <div class="form-section">
+          <h4>Реквизиты</h4>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inn">ИНН:</label>
+              <input 
+                type="text" 
+                id="inn" 
+                v-model="newClientForm.inn"
+                :class="{ 'error': formErrors.inn }"
+                placeholder="7707083893"
+                readonly
+              />
+              <span v-if="formErrors.inn" class="error-text">{{ formErrors.inn }}</span>
+            </div>
+            
+            <div class="form-group">
+              <label for="kpp">КПП:</label>
+              <input 
+                type="text" 
+                id="kpp" 
+                v-model="newClientForm.kpp"
+                :class="{ 'error': formErrors.kpp }"
+                placeholder="770701001"
+              />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="ogrn">ОГРН:</label>
+            <input 
+              type="text" 
+              id="ogrn" 
+              v-model="newClientForm.ogrn"
+              :class="{ 'error': formErrors.ogrn }"
+              placeholder="1234567890123"
+            />
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="organizationForm">Организационная форма:</label>
+              <select 
+                id="organizationForm" 
+                v-model="newClientForm.organizationForm"
+                :class="{ 'error': formErrors.organizationForm }"
+              >
+                <option value="">Выберите форму</option>
+                <option value="ООО">ООО</option>
+                <option value="АО">АО</option>
+                <option value="ИП">ИП</option>
+                <option value="ЗАО">ЗАО</option>
+                <option value="ПАО">ПАО</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="clientType">Тип клиента:</label>
+              <select 
+                id="clientType" 
+                v-model="newClientForm.clientType"
+                :class="{ 'error': formErrors.clientType }"
+              >
+                <option value="">Выберите тип</option>
+                <option value="Individual">Физическое лицо</option>
+                <option value="Legal">Юридическое лицо</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group" v-if="newClientForm.clientType === 'Individual'">
+            <label for="birthDate">Дата рождения:</label>
+            <input 
+              type="date" 
+              id="birthDate" 
+              v-model="newClientForm.birthDate"
+              :class="{ 'error': formErrors.birthDate }"
+            />
+          </div>
+        </div>
+
+        <!-- Контактная информация -->
+        <div class="form-section">
+          <h4>Контактная информация</h4>
+          
+          <div class="form-group">
+            <label for="mainPhone">Основной телефон:</label>
+            <input 
+              type="tel" 
+              id="mainPhone" 
+              v-model="newClientForm.mainPhone"
+              :class="{ 'error': formErrors.mainPhone }"
+              placeholder="+7 (999) 123-45-67"
+            />
+            <span v-if="formErrors.mainPhone" class="error-text">{{ formErrors.mainPhone }}</span>
+          </div>
+          
+          <div class="form-group">
+            <label>Дополнительные телефоны:</label>
+            <div class="phone-list">
+              <div 
+                v-for="(phone, index) in newClientForm.phones" 
+                :key="index"
+                class="phone-item"
+              >
+                <input 
+                  type="tel" 
+                  v-model="newClientForm.phones[index]"
+                  :placeholder="`Телефон ${index + 1}`"
+                />
+                <button 
+                  type="button" 
+                  class="btn-remove-phone" 
+                  @click="removePhone(index)"
+                  v-if="newClientForm.phones.length > 1"
+                >
+                  ✕
+                </button>
+              </div>
+              <button type="button" class="btn-add-phone" @click="addPhone">
+                + Добавить телефон
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Email адреса:</label>
+            <div class="email-list">
+              <div 
+                v-for="(email, index) in newClientForm.emails" 
+                :key="index"
+                class="email-item"
+              >
+                <input 
+                  type="email" 
+                  v-model="newClientForm.emails[index]"
+                  :placeholder="`Email ${index + 1}`"
+                />
+                <button 
+                  type="button" 
+                  class="btn-remove-email" 
+                  @click="removeEmail(index)"
+                  v-if="newClientForm.emails.length > 1"
+                >
+                  ✕
+                </button>
+              </div>
+              <button type="button" class="btn-add-email" @click="addEmail">
+                + Добавить email
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn-save-client" @click="saveNewClient">
+          💾 Сохранить клиента
+        </button>
+        <button type="button" class="btn-cancel" @click="cancelCreateClient">
+          Отмена
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'ClientSearch4',
+  name: 'ClientSearch3',
   
   props: {
     modelValue: {
@@ -128,6 +356,25 @@ export default {
       searchElapsed: 0,
       currentSearchMessage: '',
       searchTimer: null,
+      
+      // Новые данные для создания клиента
+      showCreateForm: false,
+      newClientForm: {
+        fullName: '',
+        shortName: '',
+        fullWithOpf: '',
+        shortWithOpf: '',
+        birthDate: '',
+        organizationForm: '',
+        ogrn: '',
+        inn: '',
+        kpp: '',
+        mainPhone: '',
+        clientType: '',
+        phones: [''],
+        emails: ['']
+      },
+      createFormErrors: {},
       
       // Моковые данные для каскадного поиска
       mockClients: {
@@ -187,6 +434,10 @@ export default {
     
     nameErrorMessage() {
       return this.errors.name || ''
+    },
+    
+    formErrors() {
+      return this.createFormErrors
     }
   },
   
@@ -224,6 +475,7 @@ export default {
       this.foundClient = null
       this.clientFound = false
       this.showNotFound = false
+      this.showCreateForm = false
       this.resetSearch()
       
       if (this.clientFound) {
@@ -258,6 +510,7 @@ export default {
       this.foundClient = null
       this.clientFound = false
       this.showNotFound = false
+      this.showCreateForm = false
       this.resetSearch()
       
       try {
@@ -275,7 +528,7 @@ export default {
       const sources = [
         { name: 'local', text: 'Поиск в базе данных', data: this.mockClients.localDB, delay: 1000 },
         { name: 'spka', text: 'Поиск в СПКА', data: this.mockClients.spka, delay: 1500 },
-        { name: 'dadata', text: 'Поиск в DaData', data: this.mockClients.dadata, delay: 30000 }
+        { name: 'dadata', text: 'Поиск в DaData', data: this.mockClients.dadata, delay: 3000 }
       ]
       
       for (const source of sources) {
@@ -359,8 +612,153 @@ export default {
       this.$emit('client-cleared')
     },
     
+    // Методы для создания клиента
     createNewClient() {
-      this.$emit('create-client', { inn: this.inn })
+      this.showNotFound = false
+      this.showCreateForm = true
+      this.newClientForm.inn = this.inn
+      this.createFormErrors = {}
+    },
+    
+    cancelCreateClient() {
+      this.showCreateForm = false
+      this.showNotFound = true
+      this.resetCreateForm()
+    },
+    
+    resetCreateForm() {
+      this.newClientForm = {
+        fullName: '',
+        shortName: '',
+        fullWithOpf: '',
+        shortWithOpf: '',
+        birthDate: '',
+        organizationForm: '',
+        ogrn: '',
+        inn: this.inn,
+        kpp: '',
+        mainPhone: '',
+        clientType: '',
+        phones: [''],
+        emails: ['']
+      }
+      this.createFormErrors = {}
+    },
+    
+    addPhone() {
+      this.newClientForm.phones.push('')
+    },
+    
+    removePhone(index) {
+      if (this.newClientForm.phones.length > 1) {
+        this.newClientForm.phones.splice(index, 1)
+      }
+    },
+    
+    addEmail() {
+      this.newClientForm.emails.push('')
+    },
+    
+    removeEmail(index) {
+      if (this.newClientForm.emails.length > 1) {
+        this.newClientForm.emails.splice(index, 1)
+      }
+    },
+    
+    validateCreateForm() {
+      this.createFormErrors = {}
+      
+      if (!this.newClientForm.fullName.trim()) {
+        this.createFormErrors.fullName = 'Полное наименование обязательно'
+      }
+      
+      if (!this.newClientForm.shortName.trim()) {
+        this.createFormErrors.shortName = 'Краткое наименование обязательно'
+      }
+      
+      if (!this.newClientForm.inn.trim()) {
+        this.createFormErrors.inn = 'ИНН обязателен'
+      }
+      
+      if (!this.newClientForm.clientType) {
+        this.createFormErrors.clientType = 'Тип клиента обязателен'
+      }
+      
+      if (this.newClientForm.clientType === 'Individual' && !this.newClientForm.birthDate) {
+        this.createFormErrors.birthDate = 'Дата рождения обязательна для физических лиц'
+      }
+      
+      if (!this.newClientForm.mainPhone.trim()) {
+        this.createFormErrors.mainPhone = 'Основной телефон обязателен'
+      }
+      
+      return Object.keys(this.createFormErrors).length === 0
+    },
+    
+    async saveNewClient() {
+      if (!this.validateCreateForm()) {
+        return
+      }
+      
+      const cleanedData = {
+        ...this.newClientForm,
+        phones: this.newClientForm.phones.filter(phone => phone.trim()),
+        emails: this.newClientForm.emails.filter(email => email.trim()),
+        createdAt: new Date().toISOString(),
+        changedAt: new Date().toISOString()
+      }
+      
+      try {
+        console.log('Создание клиента:', cleanedData)
+        
+        // Имитация API запроса
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // После успешного создания
+        this.foundClient = {
+          ...cleanedData,
+          name: cleanedData.fullName,
+          source: 'local',
+          sourceType: 'local-source',
+          statusText: '✅ Клиент создан',
+          sourceText: '📊 Источник: Создан в системе',
+          lastUpdate: new Date().toLocaleDateString('ru-RU')
+        }
+        
+        this.clientName = this.foundClient.name
+        this.clientFound = true
+        this.showCreateForm = false
+        
+        this.$emit('client-selected', this.foundClient)
+        this.showSuccessMessage('Клиент успешно создан!')
+        
+      } catch (error) {
+        console.error('Ошибка создания клиента:', error)
+        alert('Ошибка при создании клиента. Попробуйте снова.')
+      }
+    },
+    
+    showSuccessMessage(message) {
+      const notification = document.createElement('div')
+      notification.className = 'success-notification'
+      notification.textContent = message
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+      `
+      
+      document.body.appendChild(notification)
+      
+      setTimeout(() => {
+        notification.remove()
+      }, 3000)
     },
     
     showConfetti() {
@@ -401,15 +799,18 @@ export default {
   color: #ef4444;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   padding: 8px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 14px;
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -421,8 +822,10 @@ export default {
   cursor: not-allowed;
 }
 
-.form-group input.error {
+.form-group input.error,
+.form-group select.error {
   border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
 }
 
 .error-text {
@@ -476,27 +879,25 @@ export default {
   animation: spin 1s linear infinite;
 }
 
-/* Простой лоудер на всю ширину */
 .search-loader {
-  margin: 16px -24px 0 -24px;
-  padding: 20px 24px;
+  margin: 16px 0;
+  padding: 16px;
   background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  border-bottom: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
 }
 
 .loader-text {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 12px;
   text-align: center;
-  font-weight: 500;
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 12px;
 }
 
 .progress-bar {
   width: 100%;
   height: 6px;
-  background: #e5e7eb;
+  background: #e2e8f0;
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -504,30 +905,29 @@ export default {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  transition: width 0.1s ease;
   border-radius: 3px;
-  transition: width 0.3s ease;
 }
 
 .progress-info {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   font-size: 12px;
-  color: #6b7280;
+  color: #64748b;
 }
 
-/* Остальные стили */
 .client-card {
   margin-top: 16px;
   padding: 16px;
+  border: 2px solid #d1d5db;
   border-radius: 8px;
-  border: 2px solid;
+  background: white;
   animation: slideIn 0.3s ease-out;
 }
 
 .client-card.local-source {
-  border-color: #059669;
+  border-color: #10b981;
   background: #f0fdf4;
 }
 
@@ -563,10 +963,10 @@ export default {
 }
 
 .client-name {
-  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 8px;
   color: #1f2937;
+  font-size: 16px;
+  margin-bottom: 8px;
 }
 
 .client-details {
@@ -574,16 +974,16 @@ export default {
   gap: 16px;
   font-size: 14px;
   color: #6b7280;
+  flex-wrap: wrap;
 }
 
 .client-actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 
 .btn-client-select {
-  flex: 1;
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: #059669;
   color: white;
   border: none;
@@ -659,6 +1059,159 @@ export default {
 
 .btn-create-client:hover {
   background: #2563eb;
+}
+
+/* Стили для формы создания клиента */
+.create-client-form {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background: #fafafa;
+  margin-top: 16px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.create-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.create-form-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.btn-cancel-create {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-cancel-create:hover {
+  background: #d32f2f;
+}
+
+.form-section {
+  margin-bottom: 25px;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+}
+
+.form-section h4 {
+  margin: 0 0 15px 0;
+  color: #555;
+  font-size: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.phone-list,
+.email-list {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 10px;
+  background: #fafafa;
+}
+
+.phone-item,
+.email-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.phone-item:last-of-type,
+.email-item:last-of-type {
+  margin-bottom: 0;
+}
+
+.phone-item input,
+.email-item input {
+  flex: 1;
+  margin: 0;
+}
+
+.btn-remove-phone,
+.btn-remove-email {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 24px;
+}
+
+.btn-remove-phone:hover,
+.btn-remove-email:hover {
+  background: #d32f2f;
+}
+
+.btn-add-phone,
+.btn-add-email {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.btn-add-phone:hover,
+.btn-add-email:hover {
+  background: #45a049;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-save-client {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-save-client:hover {
+  background: #45a049;
+}
+
+.btn-cancel {
+  background: #757575;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-cancel:hover {
+  background: #616161;
 }
 
 @keyframes spin {
